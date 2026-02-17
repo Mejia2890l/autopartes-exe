@@ -1,0 +1,36 @@
+name: Crear EXE para Windows
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest  # ¡Aquí pedimos la PC con Windows!
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Instalar Python 3.10
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10' # Versión muy estable para rembg
+        architecture: 'x64'
+
+    - name: Instalar Dependencias
+      run: |
+        pip install --upgrade pip
+        pip install "rembg[cpu]" pillow ttkbootstrap pyinstaller
+
+    - name: Crear Ejecutable (PyInstaller)
+      # --onedir es más seguro para rembg que --onefile a veces, 
+      # pero probaremos --onefile primero para que sea un solo archivo.
+      run: |
+        pyinstaller --noconsole --onefile --name="OptimizadorML" app_pro.py
+
+    - name: Subir el EXE resultante
+      uses: actions/upload-artifact@v4
+      with:
+        name: OptimizadorML-Windows
+        path: dist/OptimizadorML.exe
